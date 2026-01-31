@@ -46,7 +46,7 @@
 <body style="margin: 0; overflow: hidden;">
     
     <div class="arjs-video-container" id="videoButtonContainer">
-        <button class="arjs-video-button" id="videoButton">Tap to Start Video</button>
+        <button class="arjs-video-button" id="videoButton">Tap to scan the card</button>
     </div>
     
     <a-scene 
@@ -67,7 +67,7 @@
         
         <a-marker type="pattern" url="NEON.patt">
             <a-entity 
-                geometry="primitive: plane; width: 1; height: 0.5625" 
+                geometry="primitive: plane; width: 2; height: 1" 
                 material="shader: flat; src: #myVideo; side: double" 
                 position="0 0 0" 
                 rotation="-90 0 0">
@@ -103,4 +103,5 @@
     </script>
 </body>
 </html>
+
 
