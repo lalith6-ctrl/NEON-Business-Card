@@ -7,57 +7,40 @@
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.js"></script>
     <style>
-        .arjs-loader {
-            height: 100%;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .arjs-loader div {
-            text-align: center;
-            font-size: 1.25em;
-            color: white;
-        }
         .arjs-video-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 9998;
+            z-index: 9999; /* Ensure it's above everything */
         }
         .arjs-video-button {
             background: #4361ee;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 15px 30px;
             font-size: 1.2em;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
     
     <div class="arjs-video-container" id="videoButtonContainer">
-        <button class="arjs-video-button" id="videoButton">Tap To Scan The Card</button>
+        <button class="arjs-video-button" id="videoButton">Tap To Start Camera</button>
     </div>
     
     <a-scene 
+        id="scene"
+        style="display: none;"
         vr-mode-ui="enabled: false"
         arjs="sourceType: webcam; debugUIEnabled: false;">
         
         <a-assets>
             <video 
                 id="myVideo" 
-                autoplay="false" 
-                controls="false" 
+                loop="false"
                 webkit-playsinline="true" 
                 playsinline="true" 
                 crossorigin="anonymous">
@@ -65,7 +48,7 @@
             </video>
         </a-assets>
         
-        <a-marker type="pattern" url="NEON.patt">
+        <a-marker type="pattern" url="NEON.patt" id="cardMarker" marker-handler>
             <a-entity 
                 geometry="primitive: plane; width: 4; height: 3" 
                 material="shader: flat; src: #myVideo; side: double" 
@@ -78,27 +61,38 @@
     </a-scene>
     
     <script>
-        // Hide loader when AR starts
-        document.addEventListener('DOMContentLoaded', function() {
-            const scene = document.querySelector('a-scene');
-            scene.addEventListener('loaded', function() {
-                document.querySelector('.arjs-loader').style.display = 'none';
-            });
+        // Register the marker handler to control video playback
+        AFRAME.registerComponent('marker-handler', {
+            init: function () {
+                const marker = this.el;
+                const video = document.querySelector('#myVideo');
+
+                marker.addEventListener('markerFound', function () {
+                    video.play();
+                });
+
+                marker.addEventListener('markerLost', function () {
+                    video.pause();
+                });
+            }
         });
-        
-        // Handle video playback
-        document.getElementById('videoButton').addEventListener('click', function() {
-            const video = document.getElementById('myVideo');
-            const buttonContainer = document.getElementById('videoButtonContainer');
+
+        const btn = document.getElementById('videoButton');
+        const container = document.getElementById('videoButtonContainer');
+        const scene = document.getElementById('scene');
+        const video = document.getElementById('myVideo');
+
+        btn.addEventListener('click', function() {
+            // 1. Show the AR scene
+            scene.style.display = 'block';
             
-            // Play video
-            video.play().then(() => {
-                // Hide button after successful play
-                buttonContainer.style.display = 'none';
-            }).catch(e => {
-                console.error('Error playing video:', e);
-                alert('Could not play video. Please check your file and browser settings.');
-            });
+            // 2. Prime the video (Crucial for mobile)
+            // We play and pause immediately so the browser allows future playback
+            video.play();
+            video.pause();
+            
+            // 3. Hide the button
+            container.style.display = 'none';
         });
     </script>
 </body>
